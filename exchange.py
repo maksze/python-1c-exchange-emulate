@@ -116,7 +116,7 @@ def step3(_exchange_url, _exchange_path, _cookie, _file_for_upload):
     return True
 
 
-def step4(_exchange_url, _exchange_path, _cookie, _file_for_import):
+def step4(_exchange_url, _exchange_path, _cookie, _file_for_import, _delay):
     # type: (string, string, string, string) -> bool
     print colored('Шаг #4: Импорт', 'blue')
     print 'Импорт ' + _file_for_import + '\n'
@@ -128,6 +128,7 @@ def step4(_exchange_url, _exchange_path, _cookie, _file_for_import):
         r = requests.get(url, headers={'Cookie': _cookie}).text
         print colored('#' + count.__str__(), 'red'), r + '\n'
         count += 1
+        time.sleep(_delay)
     return True
 
 
@@ -212,7 +213,7 @@ def get_files_from_work_directory():
     return files
 
 
-def make_import(_exchange_url, _exchange_path, _login, _password):
+def make_import(_exchange_url, _exchange_path, _login, _password, _delay):
     try:
         start_time = time.time()
         print colored('Запущен обмен ' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\n', 'blue')
@@ -238,7 +239,7 @@ def make_import(_exchange_url, _exchange_path, _login, _password):
                 file_for_upload += '.xml'
 
             step3(_exchange_url, _exchange_path, cookie, file_for_upload)
-            step4(_exchange_url, _exchange_path, cookie, file_for_upload.replace('.zip', '.xml'))
+            step4(_exchange_url, _exchange_path, cookie, file_for_upload.replace('.zip', '.xml'), _delay)
             print colored(
                 'Конец импорта.\n' + ("Время выполнения - %s секунд(ы)\n" % (time.time() - exchange_begin_time)),
                 'green')
@@ -257,6 +258,7 @@ exchange_url = ''
 exchange_path = ''
 login = ''
 password = ''
+delay = 5
 
 # если в скрипт переданы параметры, работаем с ними
 if len(sys.argv) > 1:
@@ -288,6 +290,12 @@ if len(sys.argv) > 1:
         print colored('Не задан пароль', 'red')
         die()
 
+    try:
+        # Задержка
+        delay = int(sys.argv[5])
+    except IndexError:
+        pass
+
 # если параметры не переданы ине установлены в скрипте, выводим информацию по испольованию
 elif exchange_url == '' and exchange_path == '' and login == '' and password == '':
     print 'python ' + __file__ + colored(' <host> <url> <login> <password>', 'blue')
@@ -299,4 +307,4 @@ elif exchange_url == '' and exchange_path == '' and login == '' and password == 
     die()
 
 # Запустить обмен
-make_import(exchange_url, exchange_path, login, password)
+make_import(exchange_url, exchange_path, login, password, delay)
